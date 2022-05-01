@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <sstream>
 
 using namespace sf;
 
@@ -63,8 +64,59 @@ int main()
 	float cloud1Speed = 0.0f;
 	float cloud2Speed = 0.0f;
 	float cloud3Speed = 0.0f;
+	
+	// Setting up HUD elements.
+	int score = 0;
+
+	Text messageText;
+	Text scoreText;
+
+	Font font;
+	font.loadFromFile("assets/fonts/KOMIKAP_.ttf");
+
+	messageText.setFont(font);
+	scoreText.setFont(font);
+
+	messageText.setString("Press Enter to start!");
+	scoreText.setString("Score = 0");
+
+	messageText.setCharacterSize(75);
+	scoreText.setCharacterSize(100);
+
+	messageText.setFillColor(Color::White);
+	scoreText.setFillColor(Color::White);
+
+	FloatRect textRect = messageText.getLocalBounds();
+
+	messageText.setOrigin
+	(
+		textRect.left + textRect.width / 2.0f,
+		textRect.top + textRect.height / 2.0f
+	);
+
+	messageText.setPosition(1920 / 2.0f, 1080 / 2.0f);
+	scoreText.setPosition(20, 20);
 
 	Clock clock;
+
+	// Setting up the time bar.
+	RectangleShape timeBar;
+
+	float timeBarStartWidth = 400;
+	float timeBarHeight = 80;
+	
+	timeBar.setSize(Vector2f(timeBarStartWidth, timeBarHeight));
+	timeBar.setFillColor(Color::Red);
+	timeBar.setPosition
+	(
+		(1920 / 2) - timeBarStartWidth / 2,
+		980
+	);
+
+	Time gameTimeTotal;
+
+	float timeRemaining = 6.0f;
+	float timeBarWidthPerSecond = timeBarStartWidth / timeRemaining;
 
 	bool paused = true;
 
@@ -84,6 +136,10 @@ int main()
 		if (Keyboard::isKeyPressed(Keyboard::Return))
 		{
 			paused = false;
+
+			// Reset time and the score.
+			score = 0;
+			timeRemaining = 6;
 		}
 
 		/*
@@ -95,6 +151,34 @@ int main()
 		if (!paused)
 		{
 			Time dt = clock.restart();
+
+			// Resizing the time bar.
+			timeRemaining = timeRemaining - dt.asSeconds();
+
+			timeBar.setSize
+			(
+				Vector2f(timeBarWidthPerSecond * timeRemaining, 
+						timeBarHeight)
+			);
+
+			// Checking if time has expired.
+			if (timeRemaining <= 0.0f)
+			{
+				paused = true;
+
+				messageText.setString("Out of time!!!");
+
+				FloatRect textRect = messageText.getLocalBounds();
+
+				messageText.setOrigin
+				(
+					textRect.left +  textRect.width/2.0f, 
+					textRect.top + textRect.height/2.0f
+				);
+
+				messageText.setPosition(1920 / 2.0f, 1080 / 2.0f);
+
+			}
 
 			// Setup the bee.
 			if (!beeActive)
@@ -214,6 +298,11 @@ int main()
 					cloud3Active = false;
 				}
 			}
+
+			// Updating score on the HUD.
+			std::stringstream ss;
+			ss << "Score = " << score;
+			scoreText.setString(ss.str());
 		}
 
 		/*
@@ -240,6 +329,15 @@ int main()
 
 		// Draw the bee.
 		window.draw(spriteBee);
+
+		window.draw(scoreText);
+
+		window.draw(timeBar);
+
+		if (paused)
+		{
+			window.draw(messageText);
+		}
 
 		// Show everything we just drew.
 		window.display();
