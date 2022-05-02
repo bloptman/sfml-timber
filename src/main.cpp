@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <sstream>
 
 using namespace sf;
@@ -469,6 +470,31 @@ int main()
 					logActive = false;
 					spriteLog.setPosition(810, 720);
 				}
+			}
+
+			// Handling player death.
+			if (branchPositions[5] == playerSide)
+			{
+				paused = true;
+				acceptInput = false;
+				
+				// Position gravestone and hide player.
+				spriteRIP.setPosition(525, 760);
+				spritePlayer.setPosition(2000, 660);
+
+				spriteRIP.setPosition(525, 760);
+				spritePlayer.setPosition(2000, 660);
+
+				// Draw text to the center of the screen.
+				messageText.setString("SQUISHED!!!");
+
+				FloatRect textRect = messageText.getLocalBounds();
+				messageText.setOrigin
+				(
+					textRect.left + textRect.width / 2.0f,
+					textRect.top + textRect.height / 2.0f
+				);
+				messageText.setPosition(1920 / 2.0f, 1080 / 2.0f);
 			}
 		}
 
